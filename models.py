@@ -61,6 +61,7 @@ class Contract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
     tenant_name = db.Column(db.String(200), nullable=False)
+    tenant_id_card = db.Column(db.String(50))
     tenant_phone = db.Column(db.String(50))
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
@@ -90,6 +91,7 @@ class RentalHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
     tenant_name = db.Column(db.String(200), nullable=False)
+    tenant_id_card = db.Column(db.String(50))
     tenant_phone = db.Column(db.String(50))
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)
@@ -100,3 +102,18 @@ class RentalHistory(db.Model):
 
     def __repr__(self):
         return f'<RentalHistory {self.tenant_name}>'
+
+
+def id_card_migrate(database):
+    """Add id_card column to existing SQLite databases (safe re-run)."""
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(database.engine)
+        for table, col in [('contract', 'tenant_id_card'), ('rental_history', 'tenant_id_card')]:
+            cols = [c['name'] for c in inspector.get_columns(table)]
+            if col not in cols:
+                with database.engine.connect() as conn:
+                    conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {col} VARCHAR(50)'))
+                    conn.commit()
+    except Exception:
+        pass  # table may not exist yet, or already migrated

@@ -11,7 +11,7 @@ from flask_login import (
 )
 
 from config import Config
-from models import db, User, Property, Contract, Photo, RentalHistory
+from models import db, User, Property, Contract, Photo, RentalHistory, id_card_migrate
 from forms import LoginForm, PropertyForm, ContractForm, PhotoForm
 
 
@@ -59,6 +59,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        id_card_migrate(db)  # add id_card column to existing DBs
         if not User.query.filter_by(username='admin').first():
             admin = User(username='admin')
             admin.set_password('admin123')
@@ -121,6 +122,23 @@ def create_app():
                 description=form.description.data,
             )
             db.session.add(prop)
+            db.session.flush()  # get prop.id before commit
+
+            # 如果添加房源时同时录入租客信息，自动创建合同
+            if form.tenant_name.data and form.lease_start.data and form.lease_end.data:
+                contract = Contract(
+                    property_id=prop.id,
+                    tenant_name=form.tenant_name.data,
+                    tenant_id_card=form.tenant_id_card.data,
+                    tenant_phone=form.tenant_phone.data,
+                    start_date=form.lease_start.data,
+                    end_date=form.lease_end.data,
+                    rent_amount=0,
+                )
+                db.session.add(contract)
+                if prop.status == 'vacant':
+                    prop.status = 'rented'
+
             db.session.commit()
             flash(f'房源 "{prop.name}" 添加成功！', 'success')
             return redirect(url_for('property_detail', pid=prop.id))
@@ -154,7 +172,7 @@ def create_app():
             flash('房源信息已更新！', 'success')
             return redirect(url_for('property_detail', pid=prop.id))
         return render_template(
-            'property_form.html', form=form, title='Edit Property', property=prop
+            'property_form.html', form=form, title='编辑房源', property=prop
         )
 
     @app.route('/property/<int:pid>/delete', methods=['POST'])
@@ -187,6 +205,7 @@ def create_app():
             contract = Contract(
                 property_id=pid,
                 tenant_name=form.tenant_name.data,
+                tenant_id_card=form.tenant_id_card.data,
                 tenant_phone=form.tenant_phone.data,
                 start_date=form.start_date.data,
                 end_date=form.end_date.data,
@@ -280,6 +299,7 @@ def create_app():
             history = RentalHistory(
                 property_id=pid,
                 tenant_name=active.tenant_name,
+                tenant_id_card=active.tenant_id_card,
                 tenant_phone=active.tenant_phone,
                 start_date=active.start_date,
                 end_date=datetime.utcnow().date() if hasattr(datetime, 'utcnow') else datetime.now().date(),

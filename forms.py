@@ -31,11 +31,20 @@ class PropertyForm(FlaskForm):
         ('maintenance', '维修中')
     ])
     description = TextAreaField('描述', validators=[Optional()])
+
+    # 租客信息（添加房源时可同时录入）
+    tenant_name = StringField('租客姓名', validators=[Optional(), Length(max=200)])
+    tenant_id_card = StringField('身份证号码', validators=[Optional(), Length(max=50)])
+    tenant_phone = StringField('联系电话', validators=[Optional(), Length(max=50)])
+    lease_start = DateField('租期开始', validators=[Optional()])
+    lease_end = DateField('租期结束', validators=[Optional()])
+
     submit = SubmitField('保存')
 
 
 class ContractForm(FlaskForm):
     tenant_name = StringField('租客姓名', validators=[DataRequired(), Length(max=200)])
+    tenant_id_card = StringField('身份证号码', validators=[Optional(), Length(max=50)])
     tenant_phone = StringField('联系电话', validators=[Optional(), Length(max=50)])
     start_date = DateField('开始日期', validators=[DataRequired()])
     end_date = DateField('结束日期', validators=[DataRequired()])

@@ -42,9 +42,14 @@
         </span>
         {% set active_contract = property.contracts.first() %}
         {% if active_contract %}
-        <span class="badge bg-dark fs-6">
+        <span class="badge bg-dark fs-6 me-2">
             <i class="fas fa-user me-1"></i>{{ active_contract.tenant_name }}
         </span>
+        {% if active_contract.tenant_id_card %}
+        <span class="badge bg-secondary fs-6">
+            <i class="fas fa-id-card me-1"></i>{{ active_contract.tenant_id_card }}
+        </span>
+        {% endif %}
         {% endif %}
     </div>
 
@@ -133,6 +138,44 @@
                         </div>
                     </div>
 
+                    {% set active_contract = property.contracts.first() %}
+                    {% if active_contract %}
+                    <div class="card mb-4 border-primary">
+                        <div class="card-header text-bg-primary py-2">
+                            <h6 class="mb-0"><i class="fas fa-user me-1"></i>当前租客</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-borderless mb-0">
+                                <tr>
+                                    <th style="width:140px;" class="ps-3">姓名</th>
+                                    <td><strong>{{ active_contract.tenant_name }}</strong></td>
+                                </tr>
+                                {% if active_contract.tenant_id_card %}
+                                <tr>
+                                    <th class="ps-3">身份证号</th>
+                                    <td>{{ active_contract.tenant_id_card }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th class="ps-3">联系电话</th>
+                                    <td>{{ active_contract.tenant_phone or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-3">租期</th>
+                                    <td>
+                                        {{ active_contract.start_date.strftime('%Y-%m-%d') }}
+                                        &rarr; {{ active_contract.end_date.strftime('%Y-%m-%d') }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="ps-3">月租金</th>
+                                    <td><strong>¥{{ "%.0f"|format(active_contract.rent_amount) }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% if property.status == 'rented' %}
                     <div class="card mb-4 border-warning">
                         <div class="card-body d-flex align-items-center justify-content-between">
@@ -173,10 +216,10 @@
                         <thead>
                             <tr>
                                 <th>租客</th>
+                                <th>身份证号</th>
                                 <th>电话</th>
                                 <th>租期</th>
                                 <th>租金</th>
-                                <th>押金</th>
                                 <th>文件</th>
                                 <th class="text-end">操作</th>
                             </tr>
@@ -190,6 +233,7 @@
                                     <span class="badge bg-success ms-1">当前</span>
                                     {% endif %}
                                 </td>
+                                <td>{{ contract.tenant_id_card or '-' }}</td>
                                 <td>{{ contract.tenant_phone or '-' }}</td>
                                 <td>
                                     {{ contract.start_date.strftime('%Y-%m-%d') }}
@@ -308,10 +352,10 @@
                         <thead>
                             <tr>
                                 <th>租客</th>
+                                <th>身份证号</th>
                                 <th>电话</th>
                                 <th>租期</th>
                                 <th>租金</th>
-                                <th>押金</th>
                                 <th>备注</th>
                             </tr>
                         </thead>
@@ -319,6 +363,7 @@
                             {% for h in histories %}
                             <tr>
                                 <td><strong>{{ h.tenant_name }}</strong></td>
+                                <td>{{ h.tenant_id_card or '-' }}</td>
                                 <td>{{ h.tenant_phone or '-' }}</td>
                                 <td>
                                     {{ h.start_date.strftime('%Y-%m-%d') }}
@@ -388,11 +433,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             {{ contract_form.tenant_name.label(class="form-label") }}
                             {{ contract_form.tenant_name(class="form-control", placeholder="租客全名") }}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            {{ contract_form.tenant_id_card.label(class="form-label") }}
+                            {{ contract_form.tenant_id_card(class="form-control", placeholder="身份证号码") }}
+                        </div>
+                        <div class="col-md-4">
                             {{ contract_form.tenant_phone.label(class="form-label") }}
                             {{ contract_form.tenant_phone(class="form-control", placeholder="联系电话") }}
                         </div>

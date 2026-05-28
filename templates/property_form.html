@@ -53,6 +53,42 @@
                             {% endif %}
                         </div>
 
+                        <!-- 租客信息（可选） -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <h6 class="mb-0 me-2"><i class="fas fa-user me-1"></i>租客信息</h6>
+                                <span class="text-muted small">（可选，如房源已出租可在此录入）</span>
+                            </div>
+                            <div class="card bg-light border-0">
+                                <div class="card-body pb-2">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            {{ form.tenant_name.label(class="form-label small") }}
+                                            {{ form.tenant_name(class="form-control form-control-sm", placeholder="租客姓名") }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            {{ form.tenant_id_card.label(class="form-label small") }}
+                                            {{ form.tenant_id_card(class="form-control form-control-sm", placeholder="身份证号码") }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            {{ form.tenant_phone.label(class="form-label small") }}
+                                            {{ form.tenant_phone(class="form-control form-control-sm", placeholder="联系电话") }}
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            {{ form.lease_start.label(class="form-label small") }}
+                                            {{ form.lease_start(class="form-control form-control-sm", type="date") }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.lease_end.label(class="form-label small") }}
+                                            {{ form.lease_end(class="form-control form-control-sm", type="date") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>取消
