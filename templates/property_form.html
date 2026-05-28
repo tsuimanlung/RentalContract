@@ -18,7 +18,7 @@
                         <div class="mb-3">
                             {{ form.name.label(class="form-label") }}
                             {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""),
-                                         placeholder="e.g. Sunshine Apartment 101") }}
+                                         placeholder="例如：阳光花园 101室") }}
                             {% if form.name.errors %}
                             <div class="invalid-feedback">{{ form.name.errors[0] }}</div>
                             {% endif %}
@@ -27,7 +27,7 @@
                         <div class="mb-3">
                             {{ form.address.label(class="form-label") }}
                             {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""),
-                                            rows=2, placeholder="Full address of the property") }}
+                                            rows=2, placeholder="房产完整地址") }}
                             {% if form.address.errors %}
                             <div class="invalid-feedback">{{ form.address.errors[0] }}</div>
                             {% endif %}
@@ -47,7 +47,7 @@
                         <div class="mb-4">
                             {{ form.description.label(class="form-label") }}
                             {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""),
-                                                rows=4, placeholder="Any notes about the property...") }}
+                                                rows=4, placeholder="关于该房产的备注信息...") }}
                             {% if form.description.errors %}
                             <div class="invalid-feedback">{{ form.description.errors[0] }}</div>
                             {% endif %}
@@ -55,7 +55,7 @@
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i>Cancel
+                                <i class="fas fa-arrow-left me-1"></i>取消
                             </a>
                             {{ form.submit(class="btn btn-primary px-4") }}
                         </div>

@@ -27,12 +27,22 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
-    login_manager.login_message = 'Please sign in to access this page.'
+    login_manager.login_message = '请先登录以访问此页面。'
     login_manager.login_message_category = 'warning'
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    # ---- Chinese labels for templates ----
+    @app.context_processor
+    def inject_zh_labels():
+        return dict(
+            status_labels={'vacant': '空置', 'rented': '已租', 'maintenance': '维修中'},
+            type_labels={'apartment': '公寓', 'house': '房屋', 'condo': '公寓',
+                         'studio': '单间', 'commercial': '商铺', 'land': '地块', 'other': '其他'},
+            photo_type_labels={'indoor': '室内', 'outdoor': '室外', 'facade': '外观', 'other': '其他'},
+        )
 
     # ---- helpers ----
 
@@ -54,7 +64,7 @@ def create_app():
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
-            print('Default user created: admin / admin123')
+            print('默认用户已创建: admin / admin123')
 
     # ========================  AUTH  ========================
 
@@ -68,16 +78,16 @@ def create_app():
             if user and user.check_password(form.password.data):
                 login_user(user)
                 next_page = request.args.get('next')
-                flash(f'Welcome back, {user.username}!', 'success')
+                flash(f'欢迎回来, {user.username}!', 'success')
                 return redirect(next_page or url_for('dashboard'))
-            flash('Invalid username or password.', 'danger')
+            flash('用户名或密码错误。', 'danger')
         return render_template('login.html', form=form)
 
     @app.route('/logout')
     @login_required
     def logout():
         logout_user()
-        flash('You have been signed out.', 'info')
+        flash('您已退出登录。', 'info')
         return redirect(url_for('login'))
 
     # ====================  DASHBOARD  =======================
@@ -112,7 +122,7 @@ def create_app():
             )
             db.session.add(prop)
             db.session.commit()
-            flash(f'Property "{prop.name}" added successfully!', 'success')
+            flash(f'房源 "{prop.name}" 添加成功！', 'success')
             return redirect(url_for('property_detail', id=prop.id))
         return render_template('property_form.html', form=form, title='Add Property')
 
@@ -141,7 +151,7 @@ def create_app():
         if form.validate_on_submit():
             form.populate_obj(prop)
             db.session.commit()
-            flash('Property updated!', 'success')
+            flash('房源信息已更新！', 'success')
             return redirect(url_for('property_detail', pid=prop.id))
         return render_template(
             'property_form.html', form=form, title='Edit Property', property=prop
@@ -163,7 +173,7 @@ def create_app():
 
         db.session.delete(prop)
         db.session.commit()
-        flash(f'Property "{name}" deleted.', 'success')
+        flash(f'房源 "{name}" 已删除。', 'success')
         return redirect(url_for('dashboard'))
 
     # ======================  CONTRACTS  =====================
@@ -191,7 +201,7 @@ def create_app():
             if prop.status == 'vacant':
                 prop.status = 'rented'
             db.session.commit()
-            flash('Contract added!', 'success')
+            flash('合同已添加！', 'success')
         else:
             for field, errs in form.errors.items():
                 for e in errs:
@@ -207,7 +217,7 @@ def create_app():
             _rm(os.path.join(app.config['UPLOAD_FOLDER'], 'contracts', contract.file_path))
         db.session.delete(contract)
         db.session.commit()
-        flash('Contract deleted.', 'success')
+        flash('合同已删除。', 'success')
         return redirect(url_for('property_detail', pid=pid))
 
     @app.route('/uploads/contracts/<filename>')
@@ -233,7 +243,7 @@ def create_app():
             )
             db.session.add(photo)
             db.session.commit()
-            flash('Photo uploaded!', 'success')
+            flash('照片已上传！', 'success')
         else:
             for field, errs in form.errors.items():
                 for e in errs:
@@ -248,7 +258,7 @@ def create_app():
         _rm(os.path.join(app.config['UPLOAD_FOLDER'], 'photos', photo.file_path))
         db.session.delete(photo)
         db.session.commit()
-        flash('Photo deleted.', 'success')
+        flash('照片已删除。', 'success')
         return redirect(url_for('property_detail', pid=pid))
 
     @app.route('/uploads/photos/<filename>')
@@ -275,14 +285,14 @@ def create_app():
                 end_date=datetime.utcnow().date() if hasattr(datetime, 'utcnow') else datetime.now().date(),
                 rent_amount=active.rent_amount,
                 deposit=active.deposit,
-                notes=f'Transferred from active contract #{active.id}',
+                notes=f'从当前合同 #{active.id} 转入历史',
             )
             db.session.add(history)
             db.session.delete(active)
 
         prop.status = 'vacant'
         db.session.commit()
-        flash('Tenancy ended and moved to history.', 'success')
+        flash('租约已结束，已归档至历史记录。', 'success')
         return redirect(url_for('property_detail', pid=pid))
 
     # =======================  UTILS  ========================

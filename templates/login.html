@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Lewis' Houses — Sign In{% endblock %}
+{% block title %}Lewis' Houses — 登录{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -8,7 +8,7 @@
                 <div class="card-header">
                     <i class="fas fa-building fa-2x mb-2"></i>
                     <h4>Lewis' Houses</h4>
-                    <p class="mb-0 opacity-75" style="font-size:0.9rem;">Property Management System</p>
+                    <p class="mb-0 opacity-75" style="font-size:0.9rem;">房屋租赁管理系统</p>
                 </div>
                 <div class="card-body p-4">
                     <form method="POST" novalidate>
@@ -17,7 +17,7 @@
                             {{ form.username.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                {{ form.username(class="form-control", placeholder="Username", autofocus=true) }}
+                                {{ form.username(class="form-control", placeholder="请输入用户名", autofocus=true) }}
                             </div>
                             {% if form.username.errors %}
                             <div class="text-danger small mt-1">{{ form.username.errors[0] }}</div>
@@ -27,7 +27,7 @@
                             {{ form.password.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                {{ form.password(class="form-control", placeholder="Password") }}
+                                {{ form.password(class="form-control", placeholder="请输入密码") }}
                             </div>
                             {% if form.password.errors %}
                             <div class="text-danger small mt-1">{{ form.password.errors[0] }}</div>
@@ -36,7 +36,7 @@
                         {{ form.submit(class="btn btn-primary w-100 py-2") }}
                     </form>
                     <p class="text-center text-muted small mt-3 mb-0">
-                        Default: admin / admin123
+                        默认账号: admin / admin123
                     </p>
                 </div>
             </div>

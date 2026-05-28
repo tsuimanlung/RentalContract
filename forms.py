@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed, FileRequired
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import (
     StringField, TextAreaField, FloatField, DateField,
     SelectField, PasswordField, SubmitField
@@ -8,57 +8,57 @@ from wtforms.validators import DataRequired, Optional, Length, NumberRange
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(max=80)])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Sign In')
+    username = StringField('用户名', validators=[DataRequired(), Length(max=80)])
+    password = PasswordField('密码', validators=[DataRequired()])
+    submit = SubmitField('登录')
 
 
 class PropertyForm(FlaskForm):
-    name = StringField('Property Name', validators=[DataRequired(), Length(max=200)])
-    address = TextAreaField('Address', validators=[DataRequired()])
-    property_type = SelectField('Property Type', choices=[
-        ('apartment', 'Apartment'),
-        ('house', 'House'),
-        ('condo', 'Condo'),
-        ('studio', 'Studio'),
-        ('commercial', 'Commercial'),
-        ('land', 'Land'),
-        ('other', 'Other')
+    name = StringField('房源名称', validators=[DataRequired(), Length(max=200)])
+    address = TextAreaField('地址', validators=[DataRequired()])
+    property_type = SelectField('房源类型', choices=[
+        ('apartment', '公寓'),
+        ('house', '房屋'),
+        ('condo', '高层公寓'),
+        ('studio', '单间'),
+        ('commercial', '商铺'),
+        ('land', '地块'),
+        ('other', '其他')
     ])
-    status = SelectField('Status', choices=[
-        ('vacant', 'Vacant'),
-        ('rented', 'Rented'),
-        ('maintenance', 'Under Maintenance')
+    status = SelectField('状态', choices=[
+        ('vacant', '空置'),
+        ('rented', '已租'),
+        ('maintenance', '维修中')
     ])
-    description = TextAreaField('Description', validators=[Optional()])
-    submit = SubmitField('Save')
+    description = TextAreaField('描述', validators=[Optional()])
+    submit = SubmitField('保存')
 
 
 class ContractForm(FlaskForm):
-    tenant_name = StringField('Tenant Name', validators=[DataRequired(), Length(max=200)])
-    tenant_phone = StringField('Phone Number', validators=[Optional(), Length(max=50)])
-    start_date = DateField('Start Date', validators=[DataRequired()])
-    end_date = DateField('End Date', validators=[DataRequired()])
-    rent_amount = FloatField('Monthly Rent ($)', validators=[DataRequired(), NumberRange(min=0)])
-    deposit = FloatField('Deposit ($)', validators=[Optional(), NumberRange(min=0)])
-    contract_file = FileField('Contract File (PDF or Image)', validators=[
+    tenant_name = StringField('租客姓名', validators=[DataRequired(), Length(max=200)])
+    tenant_phone = StringField('联系电话', validators=[Optional(), Length(max=50)])
+    start_date = DateField('开始日期', validators=[DataRequired()])
+    end_date = DateField('结束日期', validators=[DataRequired()])
+    rent_amount = FloatField('月租金（¥）', validators=[DataRequired(), NumberRange(min=0)])
+    deposit = FloatField('押金（¥）', validators=[Optional(), NumberRange(min=0)])
+    contract_file = FileField('合同文件（PDF或图片）', validators=[
         Optional(),
-        FileAllowed(['pdf', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'], 'PDF or images only')
+        FileAllowed(['pdf', 'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'], '仅支持PDF或图片格式')
     ])
-    notes = TextAreaField('Notes', validators=[Optional()])
-    submit = SubmitField('Add Contract')
+    notes = TextAreaField('备注', validators=[Optional()])
+    submit = SubmitField('添加合同')
 
 
 class PhotoForm(FlaskForm):
-    photo_type = SelectField('Photo Type', choices=[
-        ('indoor', 'Indoor'),
-        ('outdoor', 'Outdoor'),
-        ('facade', 'Facade'),
-        ('other', 'Other')
+    photo_type = SelectField('照片类型', choices=[
+        ('indoor', '室内'),
+        ('outdoor', '室外'),
+        ('facade', '外观'),
+        ('other', '其他')
     ])
-    photo_file = FileField('Photo', validators=[
+    photo_file = FileField('照片', validators=[
         DataRequired(),
-        FileAllowed(['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'], 'Images only')
+        FileAllowed(['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'], '仅支持图片格式')
     ])
-    description = StringField('Description', validators=[Optional(), Length(max=200)])
-    submit = SubmitField('Upload')
+    description = StringField('描述', validators=[Optional(), Length(max=200)])
+    submit = SubmitField('上传')

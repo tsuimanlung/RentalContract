@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Lewis' Houses — Dashboard{% endblock %}
+{% block title %}Lewis' Houses — 控制台{% endblock %}
 {% block content %}
 <div class="container-fluid py-4">
 
     <!-- Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1"><i class="fas fa-home me-2"></i>My Properties</h2>
-            <p class="text-muted mb-0">{{ total }} property{% if total != 1 %}ies{% else %}y{% endif %} total</p>
+            <h2 class="mb-1"><i class="fas fa-home me-2"></i>我的房源</h2>
+            <p class="text-muted mb-0">共 {{ total }} 套房产</p>
         </div>
         <a href="{{ url_for('add_property') }}" class="btn btn-primary mt-2 mt-sm-0">
-            <i class="fas fa-plus me-1"></i>Add Property
+            <i class="fas fa-plus me-1"></i>添加房源
         </a>
     </div>
 
@@ -19,7 +19,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-card text-bg-dark">
                 <div class="card-body">
-                    <div class="card-title"><i class="fas fa-layer-group me-1"></i>Total</div>
+                    <div class="card-title"><i class="fas fa-layer-group me-1"></i>总计</div>
                     <h2>{{ total }}</h2>
                 </div>
             </div>
@@ -27,7 +27,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-card text-bg-success">
                 <div class="card-body">
-                    <div class="card-title"><i class="fas fa-key me-1"></i>Rented</div>
+                    <div class="card-title"><i class="fas fa-key me-1"></i>已租</div>
                     <h2>{{ rented }}</h2>
                 </div>
             </div>
@@ -35,7 +35,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-card text-bg-warning">
                 <div class="card-body">
-                    <div class="card-title"><i class="fas fa-door-open me-1"></i>Vacant</div>
+                    <div class="card-title"><i class="fas fa-door-open me-1"></i>空置</div>
                     <h2>{{ vacant }}</h2>
                 </div>
             </div>
@@ -43,7 +43,7 @@
         <div class="col-6 col-md-3">
             <div class="card stat-card text-bg-info">
                 <div class="card-body">
-                    <div class="card-title"><i class="fas fa-tools me-1"></i>Maintenance</div>
+                    <div class="card-title"><i class="fas fa-tools me-1"></i>维修中</div>
                     <h2>{{ maintenance }}</h2>
                 </div>
             </div>
@@ -66,7 +66,7 @@
                             {% elif property.status == 'vacant' %}fa-door-open
                             {% else %}fa-tools{% endif %} me-1">
                         </i>
-                        {{ property.status }}
+                        {{ status_labels.get(property.status, property.status) }}
                     </span>
                 </div>
                 <div class="card-body">
@@ -75,7 +75,7 @@
                         {{ property.address[:60] }}{% if property.address|length > 60 %}...{% endif %}
                     </p>
                     <p class="text-muted mb-2 small">
-                        <i class="fas fa-tag me-1"></i>{{ property.property_type|title }}
+                        <i class="fas fa-tag me-1"></i>{{ type_labels.get(property.property_type, property.property_type) }}
                     </p>
                     {% set active_contract = property.contracts.first() %}
                     {% if active_contract %}
@@ -83,7 +83,7 @@
                     <p class="mb-0 small"><i class="fas fa-user me-1"></i><strong>{{ active_contract.tenant_name }}</strong></p>
                     <p class="mb-0 small">
                         <i class="fas fa-dollar-sign me-1"></i>
-                        <strong>${{ "%.0f"|format(active_contract.rent_amount) }}</strong>/month
+                        <strong>¥{{ "%.0f"|format(active_contract.rent_amount) }}</strong>/月
                     </p>
                     <p class="mb-0 small text-muted">
                         <i class="fas fa-calendar me-1"></i>
@@ -95,7 +95,7 @@
                 <div class="card-footer bg-transparent">
                     <a href="{{ url_for('property_detail', pid=property.id) }}"
                        class="btn btn-outline-primary btn-sm w-100">
-                        <i class="fas fa-eye me-1"></i>View Details
+                        <i class="fas fa-eye me-1"></i>查看详情
                     </a>
                 </div>
             </div>
@@ -106,10 +106,10 @@
             <div class="card">
                 <div class="card-body empty-state">
                     <i class="fas fa-home"></i>
-                    <h5>No properties yet</h5>
-                    <p class="text-muted mb-3">Add your first property to start managing your rentals.</p>
+                    <h5>暂无房源</h5>
+                    <p class="text-muted mb-3">添加您的第一套房产，开始管理租赁信息。</p>
                     <a href="{{ url_for('add_property') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>Add Property
+                        <i class="fas fa-plus me-1"></i>添加房源
                     </a>
                 </div>
             </div>

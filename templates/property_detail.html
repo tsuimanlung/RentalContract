@@ -15,11 +15,11 @@
         </div>
         <div class="btn-group mt-2 mt-sm-0">
             <a href="{{ url_for('edit_property', pid=property.id) }}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-edit me-1"></i>Edit
+                <i class="fas fa-edit me-1"></i>编辑
             </a>
             <button type="button" class="btn btn-outline-danger btn-sm"
                     data-bs-toggle="modal" data-bs-target="#deletePropertyModal">
-                <i class="fas fa-trash me-1"></i>Delete
+                <i class="fas fa-trash me-1"></i>删除
             </button>
         </div>
     </div>
@@ -35,10 +35,10 @@
                 {% elif property.status == 'vacant' %}fa-door-open
                 {% else %}fa-tools{% endif %} me-1">
             </i>
-            {{ property.status|title }}
+            {{ status_labels.get(property.status, property.status) }}
         </span>
         <span class="badge bg-info fs-6 me-2">
-            <i class="fas fa-tag me-1"></i>{{ property.property_type|title }}
+            <i class="fas fa-tag me-1"></i>{{ type_labels.get(property.property_type, property.property_type) }}
         </span>
         {% set active_contract = property.contracts.first() %}
         {% if active_contract %}
@@ -54,14 +54,14 @@
             <button class="nav-link active" id="info-tab"
                     data-bs-toggle="tab" data-bs-target="#info"
                     type="button" role="tab">
-                <i class="fas fa-info-circle me-1"></i>Info
+                <i class="fas fa-info-circle me-1"></i>基本信息
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="contracts-tab"
                     data-bs-toggle="tab" data-bs-target="#contracts"
                     type="button" role="tab">
-                <i class="fas fa-file-contract me-1"></i>Contracts
+                <i class="fas fa-file-contract me-1"></i>合同
                 <span class="badge bg-secondary ms-1">{{ contracts|length }}</span>
             </button>
         </li>
@@ -69,7 +69,7 @@
             <button class="nav-link" id="photos-tab"
                     data-bs-toggle="tab" data-bs-target="#photos"
                     type="button" role="tab">
-                <i class="fas fa-images me-1"></i>Photos
+                <i class="fas fa-images me-1"></i>照片
                 <span class="badge bg-secondary ms-1">{{ photos|length }}</span>
             </button>
         </li>
@@ -77,7 +77,7 @@
             <button class="nav-link" id="history-tab"
                     data-bs-toggle="tab" data-bs-target="#history"
                     type="button" role="tab">
-                <i class="fas fa-history me-1"></i>History
+                <i class="fas fa-history me-1"></i>历史记录
                 <span class="badge bg-secondary ms-1">{{ histories|length }}</span>
             </button>
         </li>
@@ -91,42 +91,42 @@
             <div class="row">
                 <div class="col-lg-8">
                     <div class="card mb-4">
-                        <div class="card-header"><h5 class="mb-0">Property Details</h5></div>
+                        <div class="card-header"><h5 class="mb-0">房产详情</h5></div>
                         <div class="card-body p-0">
                             <table class="table table-borderless mb-0">
                                 <tr>
-                                    <th style="width:140px;" class="ps-3">Name</th>
+                                    <th style="width:140px;" class="ps-3">名称</th>
                                     <td>{{ property.name }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Address</th>
+                                    <th class="ps-3">地址</th>
                                     <td>{{ property.address }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Type</th>
-                                    <td>{{ property.property_type|title }}</td>
+                                    <th class="ps-3">类型</th>
+                                    <td>{{ type_labels.get(property.property_type, property.property_type) }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Status</th>
+                                    <th class="ps-3">状态</th>
                                     <td>
                                         <span class="badge
                                             {% if property.status == 'rented' %}bg-success
                                             {% elif property.status == 'vacant' %}bg-warning
                                             {% else %}bg-secondary{% endif %}">
-                                            {{ property.status|title }}
+                                            {{ status_labels.get(property.status, property.status) }}
                                         </span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Description</th>
-                                    <td>{{ property.description or '<span class="text-muted">No description</span>'|safe }}</td>
+                                    <th class="ps-3">描述</th>
+                                    <td>{{ property.description or '<span class="text-muted">暂无描述</span>'|safe }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Created</th>
+                                    <th class="ps-3">创建时间</th>
                                     <td>{{ property.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="ps-3">Updated</th>
+                                    <th class="ps-3">更新时间</th>
                                     <td>{{ property.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                 </tr>
                             </table>
@@ -138,15 +138,15 @@
                         <div class="card-body d-flex align-items-center justify-content-between">
                             <div>
                                 <i class="fas fa-handshake text-warning me-2"></i>
-                                <strong>Active tenancy in progress</strong>
+                                <strong>当前正在出租中</strong>
                                 <p class="text-muted small mb-0 mt-1">
-                                    End the current tenancy to move it to history and mark property as vacant.
+                                    结束当前租约，将合同归档至历史记录，并将房源标记为空置。
                                 </p>
                             </div>
                             <form action="{{ url_for('end_tenancy', pid=property.id) }}" method="POST"
-                                  onsubmit="return confirm('End the current tenancy? This will archive the active contract.')">
+                                  onsubmit="return confirm('确定要结束当前租约吗？当前合同将归档至历史记录。')">
                                 <button type="submit" class="btn btn-warning">
-                                    <i class="fas fa-handshake me-1"></i>End Tenancy
+                                    <i class="fas fa-handshake me-1"></i>结束租约
                                 </button>
                             </form>
                         </div>
@@ -159,10 +159,10 @@
         <!-- ============ CONTRACTS TAB ============ -->
         <div class="tab-pane fade" id="contracts" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Contracts</h5>
+                <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>合同管理</h5>
                 <button type="button" class="btn btn-primary btn-sm"
                         data-bs-toggle="modal" data-bs-target="#contractModal">
-                    <i class="fas fa-plus me-1"></i>Add Contract
+                    <i class="fas fa-plus me-1"></i>添加合同
                 </button>
             </div>
 
@@ -172,13 +172,13 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Tenant</th>
-                                <th>Phone</th>
-                                <th>Period</th>
-                                <th>Rent</th>
-                                <th>Deposit</th>
-                                <th>File</th>
-                                <th class="text-end">Actions</th>
+                                <th>租客</th>
+                                <th>电话</th>
+                                <th>租期</th>
+                                <th>租金</th>
+                                <th>押金</th>
+                                <th>文件</th>
+                                <th class="text-end">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -187,7 +187,7 @@
                                 <td>
                                     <strong>{{ contract.tenant_name }}</strong>
                                     {% if loop.first and property.status == 'rented' %}
-                                    <span class="badge bg-success ms-1">Active</span>
+                                    <span class="badge bg-success ms-1">当前</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ contract.tenant_phone or '-' }}</td>
@@ -195,13 +195,13 @@
                                     {{ contract.start_date.strftime('%Y-%m-%d') }}
                                     <br><small class="text-muted">&rarr; {{ contract.end_date.strftime('%Y-%m-%d') }}</small>
                                 </td>
-                                <td><strong>${{ "%.0f"|format(contract.rent_amount) }}</strong><br><small class="text-muted">/month</small></td>
-                                <td>{% if contract.deposit %}${{ "%.0f"|format(contract.deposit) }}{% else %}-{% endif %}</td>
+                                <td><strong>¥{{ "%.0f"|format(contract.rent_amount) }}</strong><br><small class="text-muted">/月</small></td>
+                                <td>{% if contract.deposit %}¥{{ "%.0f"|format(contract.deposit) }}{% else %}-{% endif %}</td>
                                 <td>
                                     {% if contract.file_path %}
                                     <a href="{{ url_for('download_contract', filename=contract.file_path) }}"
                                        class="btn btn-sm btn-outline-info" target="_blank"
-                                       title="Download contract file">
+                                       title="下载合同文件">
                                         <i class="fas fa-file-download"></i>
                                     </a>
                                     {% else %}
@@ -211,9 +211,9 @@
                                 <td class="text-end">
                                     <form action="{{ url_for('delete_contract', cid=contract.id) }}"
                                           method="POST" style="display:inline"
-                                          onsubmit="return confirm('Delete this contract? This cannot be undone.')">
+                                          onsubmit="return confirm('确定要删除此合同吗？此操作不可恢复。')">
                                         <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                title="Delete contract">
+                                                title="删除合同">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -228,11 +228,11 @@
             <div class="card">
                 <div class="card-body empty-state">
                     <i class="fas fa-file-contract"></i>
-                    <h5>No contracts</h5>
-                    <p class="text-muted">Add a contract to record tenant information and lease details.</p>
+                    <h5>暂无合同</h5>
+                    <p class="text-muted">添加合同以记录租客信息和租赁条款。</p>
                     <button type="button" class="btn btn-primary"
                             data-bs-toggle="modal" data-bs-target="#contractModal">
-                        <i class="fas fa-plus me-1"></i>Add Contract
+                        <i class="fas fa-plus me-1"></i>添加合同
                     </button>
                 </div>
             </div>
@@ -242,10 +242,10 @@
         <!-- ============ PHOTOS TAB ============ -->
         <div class="tab-pane fade" id="photos" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="fas fa-images me-2"></i>Photos</h5>
+                <h5 class="mb-0"><i class="fas fa-images me-2"></i>照片墙</h5>
                 <button type="button" class="btn btn-primary btn-sm"
                         data-bs-toggle="modal" data-bs-target="#photoModal">
-                    <i class="fas fa-camera me-1"></i>Upload Photo
+                    <i class="fas fa-camera me-1"></i>上传照片
                 </button>
             </div>
 
@@ -255,25 +255,25 @@
                 <div class="col-md-4 col-lg-3 col-sm-6">
                     <div class="card photo-card">
                         <img src="{{ url_for('serve_photo', filename=photo.file_path) }}"
-                             alt="{{ photo.description or 'Property photo' }}"
+                             alt="{{ photo.description or '房产照片' }}"
                              loading="lazy"
                              style="cursor:pointer;"
                              data-bs-toggle="modal" data-bs-target="#photoViewModal"
                              data-src="{{ url_for('serve_photo', filename=photo.file_path) }}"
-                             data-desc="{{ photo.description or 'Photo' }}">
+                             data-desc="{{ photo.description or '照片' }}">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="badge bg-{% if photo.photo_type == 'indoor' %}info{% elif photo.photo_type == 'outdoor' %}success{% elif photo.photo_type == 'facade' %}primary{% else %}secondary{% endif %} me-1">
-                                        {{ photo.photo_type|title }}
+                                        {{ photo_type_labels.get(photo.photo_type, photo.photo_type) }}
                                     </span>
                                     <small class="text-muted">{{ photo.description or '' }}</small>
                                 </div>
                                 <form action="{{ url_for('delete_photo', phid=photo.id) }}"
                                       method="POST" style="display:inline"
-                                      onsubmit="return confirm('Delete this photo?')">
+                                      onsubmit="return confirm('确定要删除此照片吗？')">
                                     <button type="submit" class="btn btn-sm btn-outline-danger border-0"
-                                            title="Delete photo">
+                                            title="删除照片">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </form>
@@ -287,11 +287,11 @@
             <div class="card">
                 <div class="card-body empty-state">
                     <i class="fas fa-camera"></i>
-                    <h5>No photos yet</h5>
-                    <p class="text-muted">Upload indoor, outdoor, and facade photos of this property.</p>
+                    <h5>暂无照片</h5>
+                    <p class="text-muted">上传该房产的室内、室外及外观照片。</p>
                     <button type="button" class="btn btn-primary"
                             data-bs-toggle="modal" data-bs-target="#photoModal">
-                        <i class="fas fa-camera me-1"></i>Upload Photo
+                        <i class="fas fa-camera me-1"></i>上传照片
                     </button>
                 </div>
             </div>
@@ -300,19 +300,19 @@
 
         <!-- ============ HISTORY TAB ============ -->
         <div class="tab-pane fade" id="history" role="tabpanel">
-            <h5 class="mb-3"><i class="fas fa-history me-2"></i>Rental History</h5>
+            <h5 class="mb-3"><i class="fas fa-history me-2"></i>租赁历史</h5>
             {% if histories %}
             <div class="card">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Tenant</th>
-                                <th>Phone</th>
-                                <th>Period</th>
-                                <th>Rent</th>
-                                <th>Deposit</th>
-                                <th>Notes</th>
+                                <th>租客</th>
+                                <th>电话</th>
+                                <th>租期</th>
+                                <th>租金</th>
+                                <th>押金</th>
+                                <th>备注</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -322,10 +322,10 @@
                                 <td>{{ h.tenant_phone or '-' }}</td>
                                 <td>
                                     {{ h.start_date.strftime('%Y-%m-%d') }}
-                                    <br><small class="text-muted">&rarr; {{ h.end_date.strftime('%Y-%m-%d') if h.end_date else 'Present' }}</small>
+                                    <br><small class="text-muted">&rarr; {{ h.end_date.strftime('%Y-%m-%d') if h.end_date else '至今' }}</small>
                                 </td>
-                                <td>${{ "%.0f"|format(h.rent_amount) }}/mo</td>
-                                <td>{% if h.deposit %}${{ "%.0f"|format(h.deposit) }}{% else %}-{% endif %}</td>
+                                <td>¥{{ "%.0f"|format(h.rent_amount) }}/月</td>
+                                <td>{% if h.deposit %}¥{{ "%.0f"|format(h.deposit) }}{% else %}-{% endif %}</td>
                                 <td><small class="text-muted">{{ h.notes or '' }}</small></td>
                             </tr>
                             {% endfor %}
@@ -337,8 +337,8 @@
             <div class="card">
                 <div class="card-body empty-state">
                     <i class="fas fa-clock"></i>
-                    <h5>No rental history</h5>
-                    <p class="text-muted">Past tenancies will appear here after you end them.</p>
+                    <h5>暂无历史记录</h5>
+                    <p class="text-muted">结束租约后，历史记录将显示在此处。</p>
                 </div>
             </div>
             {% endif %}
@@ -352,22 +352,22 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Delete Property</h5>
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger me-2"></i>删除房源</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong>"{{ property.name }}"</strong>?</p>
+                <p>确定要删除 <strong>"{{ property.name }}"</strong> 吗？</p>
                 <div class="alert alert-danger mb-0">
                     <i class="fas fa-exclamation-circle me-2"></i>
-                    This will permanently delete all associated contracts, photos, and rental history.
-                    This action <strong>cannot</strong> be undone.
+                    此操作将永久删除所有关联的合同、照片和租赁历史记录。
+                    该操作<strong>不可恢复</strong>。
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                 <form action="{{ url_for('delete_property', pid=property.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-1"></i>Delete Property
+                        <i class="fas fa-trash me-1"></i>确认删除
                     </button>
                 </form>
             </div>
@@ -383,18 +383,18 @@
                   method="POST" enctype="multipart/form-data">
                 {{ contract_form.hidden_tag() }}
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-file-contract me-2"></i>Add Contract</h5>
+                    <h5 class="modal-title"><i class="fas fa-file-contract me-2"></i>添加合同</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
                             {{ contract_form.tenant_name.label(class="form-label") }}
-                            {{ contract_form.tenant_name(class="form-control", placeholder="Tenant full name") }}
+                            {{ contract_form.tenant_name(class="form-control", placeholder="租客全名") }}
                         </div>
                         <div class="col-md-6">
                             {{ contract_form.tenant_phone.label(class="form-label") }}
-                            {{ contract_form.tenant_phone(class="form-control", placeholder="Phone number") }}
+                            {{ contract_form.tenant_phone(class="form-control", placeholder="联系电话") }}
                         </div>
                     </div>
                     <div class="row g-3 mt-2">
@@ -411,31 +411,31 @@
                         <div class="col-md-6">
                             {{ contract_form.rent_amount.label(class="form-label") }}
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                {{ contract_form.rent_amount(class="form-control", placeholder="1200") }}
-                                <span class="input-group-text">/month</span>
+                                <span class="input-group-text">¥</span>
+                                {{ contract_form.rent_amount(class="form-control", placeholder="3000") }}
+                                <span class="input-group-text">/月</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             {{ contract_form.deposit.label(class="form-label") }}
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                {{ contract_form.deposit(class="form-control", placeholder="2400") }}
+                                <span class="input-group-text">¥</span>
+                                {{ contract_form.deposit(class="form-control", placeholder="6000") }}
                             </div>
                         </div>
                     </div>
                     <div class="mt-3">
                         {{ contract_form.contract_file.label(class="form-label") }}
                         {{ contract_form.contract_file(class="form-control") }}
-                        <div class="form-text">Accepted: PDF, PNG, JPG, GIF (max 16MB)</div>
+                        <div class="form-text">支持格式: PDF, PNG, JPG, GIF（最大 16MB）</div>
                     </div>
                     <div class="mt-3">
                         {{ contract_form.notes.label(class="form-label") }}
-                        {{ contract_form.notes(class="form-control", rows=3, placeholder="Any additional notes...") }}
+                        {{ contract_form.notes(class="form-control", rows=3, placeholder="其他备注信息...") }}
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     {{ contract_form.submit(class="btn btn-primary") }}
                 </div>
             </form>
@@ -451,7 +451,7 @@
                   method="POST" enctype="multipart/form-data">
                 {{ photo_form.hidden_tag() }}
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-camera me-2"></i>Upload Photo</h5>
+                    <h5 class="modal-title"><i class="fas fa-camera me-2"></i>上传照片</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -462,17 +462,17 @@
                     <div class="mb-3">
                         {{ photo_form.photo_file.label(class="form-label") }}
                         {{ photo_form.photo_file(class="form-control", accept="image/*") }}
-                        <div class="form-text">Accepted: PNG, JPG, GIF, WebP (max 16MB)</div>
-                        <img id="photoPreview" src="" alt="Preview"
+                        <div class="form-text">支持格式: PNG, JPG, GIF, WebP（最大 16MB）</div>
+                        <img id="photoPreview" src="" alt="预览"
                              style="display:none; max-height:200px; margin-top:10px; border-radius:8px;">
                     </div>
                     <div class="mb-3">
                         {{ photo_form.description.label(class="form-label") }}
-                        {{ photo_form.description(class="form-control", placeholder="e.g. Living room, Front view...") }}
+                        {{ photo_form.description(class="form-control", placeholder="例如：客厅、主卧、正面外观...") }}
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     {{ photo_form.submit(class="btn btn-primary") }}
                 </div>
             </form>
@@ -485,11 +485,11 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title">Photo</h6>
+                <h6 class="modal-title">照片预览</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0 bg-dark">
-                <img id="photoViewer" src="" class="w-100" alt="Property photo"
+                <img id="photoViewer" src="" class="w-100" alt="房产照片"
                      style="max-height:85vh; object-fit:contain;">
             </div>
         </div>
@@ -501,13 +501,12 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Photo viewer: update modal content on click
     const viewer = document.getElementById('photoViewer');
     document.querySelectorAll('[data-bs-target="#photoViewModal"]').forEach(function (el) {
         el.addEventListener('click', function () {
             viewer.src = this.dataset.src;
             const title = document.querySelector('#photoViewModal .modal-title');
-            if (title) title.textContent = this.dataset.desc || 'Property Photo';
+            if (title) title.textContent = this.dataset.desc || '照片';
         });
     });
 });
