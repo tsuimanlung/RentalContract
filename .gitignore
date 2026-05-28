@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Database
+*.db
+instance/
+
+# Uploaded files (keep directories, ignore contents)
+uploads/contracts/*
+uploads/photos/*
+!uploads/contracts/.gitkeep
+!uploads/photos/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flask
+instance/

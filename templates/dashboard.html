@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Lewis' Houses — Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-home me-2"></i>My Properties</h2>
+            <p class="text-muted mb-0">{{ total }} property{% if total != 1 %}ies{% else %}y{% endif %} total</p>
+        </div>
+        <a href="{{ url_for('add_property') }}" class="btn btn-primary mt-2 mt-sm-0">
+            <i class="fas fa-plus me-1"></i>Add Property
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-bg-dark">
+                <div class="card-body">
+                    <div class="card-title"><i class="fas fa-layer-group me-1"></i>Total</div>
+                    <h2>{{ total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-bg-success">
+                <div class="card-body">
+                    <div class="card-title"><i class="fas fa-key me-1"></i>Rented</div>
+                    <h2>{{ rented }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-bg-warning">
+                <div class="card-body">
+                    <div class="card-title"><i class="fas fa-door-open me-1"></i>Vacant</div>
+                    <h2>{{ vacant }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-bg-info">
+                <div class="card-body">
+                    <div class="card-title"><i class="fas fa-tools me-1"></i>Maintenance</div>
+                    <h2>{{ maintenance }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Grid -->
+    <div class="row g-4">
+        {% for property in properties %}
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="card property-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-truncate me-2">{{ property.name }}</span>
+                    <span class="badge flex-shrink-0
+                        {% if property.status == 'rented' %}bg-success
+                        {% elif property.status == 'vacant' %}bg-warning
+                        {% else %}bg-secondary{% endif %}">
+                        <i class="fas
+                            {% if property.status == 'rented' %}fa-key
+                            {% elif property.status == 'vacant' %}fa-door-open
+                            {% else %}fa-tools{% endif %} me-1">
+                        </i>
+                        {{ property.status }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2 small">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ property.address[:60] }}{% if property.address|length > 60 %}...{% endif %}
+                    </p>
+                    <p class="text-muted mb-2 small">
+                        <i class="fas fa-tag me-1"></i>{{ property.property_type|title }}
+                    </p>
+                    {% set active_contract = property.contracts.first() %}
+                    {% if active_contract %}
+                    <hr class="my-2">
+                    <p class="mb-0 small"><i class="fas fa-user me-1"></i><strong>{{ active_contract.tenant_name }}</strong></p>
+                    <p class="mb-0 small">
+                        <i class="fas fa-dollar-sign me-1"></i>
+                        <strong>${{ "%.0f"|format(active_contract.rent_amount) }}</strong>/month
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ active_contract.start_date.strftime('%Y-%m-%d') }}
+                        &rarr; {{ active_contract.end_date.strftime('%Y-%m-%d') }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('property_detail', pid=property.id) }}"
+                       class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye me-1"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty state -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body empty-state">
+                    <i class="fas fa-home"></i>
+                    <h5>No properties yet</h5>
+                    <p class="text-muted mb-3">Add your first property to start managing your rentals.</p>
+                    <a href="{{ url_for('add_property') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add Property
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
