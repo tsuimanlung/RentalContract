@@ -11,7 +11,7 @@ from flask_login import (
 )
 
 from config import Config
-from models import db, User, Property, Contract, Photo, RentalHistory, id_card_migrate
+from models import db, User, Property, Contract, Photo, RentalHistory, schema_repair
 from forms import LoginForm, PropertyForm, ContractForm, PhotoForm
 
 
@@ -59,7 +59,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        id_card_migrate(db)  # add id_card column to existing DBs
+        schema_repair(db)  # add missing columns to existing DBs
         if not User.query.filter_by(username='admin').first():
             admin = User(username='admin')
             admin.set_password('admin123')

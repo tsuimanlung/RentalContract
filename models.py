@@ -104,16 +104,41 @@ class RentalHistory(db.Model):
         return f'<RentalHistory {self.tenant_name}>'
 
 
-def id_card_migrate(database):
-    """Add id_card column to existing SQLite databases (safe re-run)."""
+# All required columns per table for schema repair
+_REQUIRED_COLUMNS = {
+    'contract': [
+        ('property_id', 'INTEGER'),
+        ('tenant_name', 'VARCHAR(200)'),
+        ('tenant_id_card', 'VARCHAR(50)'),
+        ('tenant_phone', 'VARCHAR(50)'),
+        ('start_date', 'DATE'),
+        ('end_date', 'DATE'),
+        ('rent_amount', 'FLOAT'),
+    ],
+    'rental_history': [
+        ('property_id', 'INTEGER'),
+        ('tenant_name', 'VARCHAR(200)'),
+        ('tenant_id_card', 'VARCHAR(50)'),
+        ('tenant_phone', 'VARCHAR(50)'),
+        ('start_date', 'DATE'),
+        ('rent_amount', 'FLOAT'),
+    ],
+}
+
+
+def schema_repair(database):
+    """Add any missing columns to existing SQLite tables (safe re-run)."""
     try:
         from sqlalchemy import inspect, text
         inspector = inspect(database.engine)
-        for table, col in [('contract', 'tenant_id_card'), ('rental_history', 'tenant_id_card')]:
-            cols = [c['name'] for c in inspector.get_columns(table)]
-            if col not in cols:
-                with database.engine.connect() as conn:
-                    conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {col} VARCHAR(50)'))
-                    conn.commit()
+        for table, columns in _REQUIRED_COLUMNS.items():
+            existing = {c['name'] for c in inspector.get_columns(table)}
+            for col_name, col_type in columns:
+                if col_name not in existing:
+                    with database.engine.connect() as conn:
+                        conn.execute(text(
+                            f'ALTER TABLE {table} ADD COLUMN {col_name} {col_type}'
+                        ))
+                        conn.commit()
     except Exception:
-        pass  # table may not exist yet, or already migrated
+        pass  # table may not exist yet
