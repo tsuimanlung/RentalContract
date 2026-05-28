@@ -34,7 +34,7 @@ echo "[3/5] 配置 Python 虚拟环境..."
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements-centos.txt
 pip install gunicorn
 
 # ---------- 配置 systemd 服务 ----------
