@@ -166,8 +166,43 @@ def create_app():
     def edit_property(pid):
         prop = Property.query.get_or_404(pid)
         form = PropertyForm(obj=prop)
+
+        # GET 请求时，从当前合同填充租客信息
+        if request.method == 'GET':
+            active = prop.contracts.first()
+            if active:
+                form.tenant_name.data = active.tenant_name
+                form.tenant_id_card.data = active.tenant_id_card
+                form.tenant_phone.data = active.tenant_phone
+                form.lease_start.data = active.start_date
+                form.lease_end.data = active.end_date
+
         if form.validate_on_submit():
             form.populate_obj(prop)
+
+            # 同步更新合同租客信息
+            if form.tenant_name.data:
+                active = prop.contracts.first()
+                if active:
+                    active.tenant_name = form.tenant_name.data
+                    active.tenant_id_card = form.tenant_id_card.data
+                    active.tenant_phone = form.tenant_phone.data
+                    active.start_date = form.lease_start.data
+                    active.end_date = form.lease_end.data
+                elif form.lease_start.data and form.lease_end.data:
+                    contract = Contract(
+                        property_id=prop.id,
+                        tenant_name=form.tenant_name.data,
+                        tenant_id_card=form.tenant_id_card.data,
+                        tenant_phone=form.tenant_phone.data,
+                        start_date=form.lease_start.data,
+                        end_date=form.lease_end.data,
+                        rent_amount=0,
+                    )
+                    db.session.add(contract)
+                    if prop.status == 'vacant':
+                        prop.status = 'rented'
+
             db.session.commit()
             flash('房源信息已更新！', 'success')
             return redirect(url_for('property_detail', pid=prop.id))
