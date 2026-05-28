@@ -17,7 +17,37 @@ PORT=5000
 # ---------- 系统更新 ----------
 echo "[1/5] 安装系统依赖..."
 yum install -y epel-release
-yum install -y python3 python3-pip python3-devel git gcc
+yum install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel wget make git bc
+
+# 检查 Python 版本，如果低于 3.8 则编译安装 Python 3.11
+PYTHON_CMD="python3"
+if command -v python3 &> /dev/null; then
+    PYTHON_VER=$(python3 --version 2>&1 | grep -oP '\d+\.\d+')
+else
+    PYTHON_VER="0.0"
+fi
+echo "  当前 Python 版本: $PYTHON_VER"
+
+NEED_COMPILE=0
+if [ "$(echo "$PYTHON_VER < 3.8" | bc)" -eq 1 ]; then
+    NEED_COMPILE=1
+fi
+
+if [ "$NEED_COMPILE" -eq 1 ]; then
+    echo "  Python 版本过低，编译安装 Python 3.11（约需 5-10 分钟）..."
+    cd /tmp
+    wget -q https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tgz
+    tar xzf Python-3.11.11.tgz
+    cd Python-3.11.11
+    ./configure --enable-optimizations
+    make -j$(nproc)
+    make altinstall
+    cd /opt
+    PYTHON_CMD="python3.11"
+    echo "  Python 3.11 安装完成"
+else
+    yum install -y python3-pip python3-devel
+fi
 
 # ---------- 克隆项目 ----------
 echo "[2/5] 克隆项目..."
@@ -31,21 +61,21 @@ fi
 
 # ---------- 虚拟环境 ----------
 echo "[3/5] 配置 Python 虚拟环境..."
-python3 -m venv venv
+$PYTHON_CMD -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements-centos.txt
+pip install -r requirements.txt
 pip install gunicorn
 
 # ---------- 配置 systemd 服务 ----------
 echo "[4/5] 配置开机自启服务..."
-SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+SECRET_KEY=$($PYTHON_CMD -c "import secrets; print(secrets.token_hex(32))")
 
 # 替换密钥
 sed -i "s|SECRET_KEY = os.environ.get('SECRET_KEY') or 'lewis-houses-secret-key-change-in-production'|SECRET_KEY = os.environ.get('SECRET_KEY') or '$SECRET_KEY'|" config.py
 
 # 生成 CentOS 兼容的 service 文件
-cat > /etc/systemd/system/rental-contract.service << 'SERVICEEOF'
+cat > /etc/systemd/system/rental-contract.service << SERVICEEOF
 [Unit]
 Description=Lewis' Houses — Rental Property Management
 After=network.target
