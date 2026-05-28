@@ -2,7 +2,7 @@
 
 一个轻量级的 Web 应用程序，用于管理出租房源、租赁合同（扫描件/图片）和房屋照片，支持随时随地通过浏览器访问。
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue) ![Flask](https://img.shields.io/badge/Flask-3.0+-lightgrey) ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite) ![License](https://img.shields.io/badge/License-MIT-green)
+![Python](https://img.shields.io/badge/Python-3.6+-blue) ![Flask](https://img.shields.io/badge/Flask-2.0+-lightgrey) ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite) ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -24,7 +24,7 @@
 
 ### 环境要求
 
-- Python 3.8+
+- Python 3.6+（CentOS 7 使用 Python 3.6 + `requirements-centos.txt`）
 - pip
 
 ### 安装步骤
@@ -69,7 +69,8 @@ RentalContract/
 ├── models.py               # 数据库模型（SQLAlchemy ORM）
 ├── forms.py                # WTForms 表单定义
 ├── config.py               # 应用配置
-├── requirements.txt        # Python 依赖
+├── requirements.txt            # Python 依赖（Python 3.8+）
+├── requirements-centos.txt     # Python 依赖（CentOS 7 / Python 3.6）
 ├── .gitignore
 ├── README.md
 ├── templates/              # Jinja2 HTML 模板
@@ -110,10 +111,13 @@ RentalContract/
 
 1. 登录 [Oracle Cloud 控制台](https://cloud.oracle.com/)
 2. 创建 VM 实例：
-   - 镜像：**Ubuntu 22.04** 或 **24.04**（ARM 或 AMD 均可）
+   - 镜像：**Ubuntu 22.04** / **24.04** 或 **CentOS 7** / **Oracle Linux** 均可
    - 形态：VM.Standard.A1.Flex（ARM，最高 4 核 24GB 免费）或 VM.Standard.E2.1.Micro（AMD，1 核 1GB 免费）
-   - 网络：确保开放 **5000** 端口
-3. 通过 SSH 连接实例
+3. 实例创建后，在 **虚拟云网络** → **安全列表** 中添加入站规则：
+   - 源 CIDR：`0.0.0.0/0`
+   - 协议：TCP
+   - 目标端口范围：`5000`
+4. 通过 SSH 连接实例
 
 #### 一键部署（Ubuntu）
 
@@ -137,7 +141,7 @@ chmod +x setup-centos.sh
 ./setup-centos.sh
 ```
 
-#### 手动部署
+#### 手动部署（Ubuntu）
 
 ```bash
 # 1. 安装依赖
@@ -163,6 +167,38 @@ sudo systemctl start rental-contract
 # 5. 防火墙开放端口 5000
 sudo ufw allow 5000/tcp
 sudo ufw --force enable
+```
+
+#### 手动部署（CentOS 7 / Oracle Linux）
+
+CentOS 7 自带的 Python 3.6 较旧，需使用兼容依赖文件：
+
+```bash
+# 1. 安装依赖
+sudo yum install -y epel-release
+sudo yum install -y python3 python3-pip python3-devel git
+
+# 2. 克隆项目
+git clone https://github.com/tsuimanlung/RentalContract.git
+cd RentalContract
+
+# 3. 配置 Python 环境
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements-centos.txt
+pip install gunicorn
+
+# 4. 配置 systemd 服务
+sudo sed "s|/home/ubuntu|/opt/RentalContract|g; s|User=ubuntu|User=root|; s|Group=ubuntu|Group=root|" \
+  deploy/rental-contract.service > /etc/systemd/system/rental-contract.service
+sudo systemctl daemon-reload
+sudo systemctl enable rental-contract
+sudo systemctl start rental-contract
+
+# 5. 防火墙开放端口 5000
+sudo firewall-cmd --add-port=5000/tcp --permanent
+sudo firewall-cmd --reload
 ```
 
 完成后访问 `http://<你的实例IP>:5000` 即可使用。
@@ -203,11 +239,20 @@ sudo systemctl status rental-contract
 # 查看日志（实时）
 sudo journalctl -u rental-contract -f
 
+# 查看最新 50 行日志
+sudo journalctl -u rental-contract --no-pager -n 50
+
 # 重启服务
 sudo systemctl restart rental-contract
 
-# 更新代码后重启
+# 查看端口占用
+sudo lsof -i :5000
+
+# 更新代码后重启（Ubuntu）
 cd ~/RentalContract && git pull && sudo systemctl restart rental-contract
+
+# 更新代码后重启（CentOS，root 用户）
+cd /opt/RentalContract && git pull && systemctl restart rental-contract
 ```
 
 ### 方式二：其他云平台
