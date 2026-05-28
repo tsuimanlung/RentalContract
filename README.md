@@ -102,31 +102,120 @@ RentalContract/
 
 ## 部署指南
 
-### 方式一：Linux 服务器（推荐）
+### 方式一：Oracle Cloud 免费 VPS（推荐 🏆）
+
+利用 Oracle Cloud 永久免费套餐（ARM 实例，4 核 24GB 内存），部署完整的 Flask 应用。
+
+#### 创建实例
+
+1. 登录 [Oracle Cloud 控制台](https://cloud.oracle.com/)
+2. 创建 VM 实例：
+   - 镜像：**Ubuntu 22.04** 或 **24.04**（ARM 或 AMD 均可）
+   - 形态：VM.Standard.A1.Flex（ARM，最高 4 核 24GB 免费）或 VM.Standard.E2.1.Micro（AMD，1 核 1GB 免费）
+   - 网络：确保开放 **80（HTTP）** 端口
+3. 通过 SSH 连接实例
+
+#### 一键部署
 
 ```bash
-# 安装生产级 WSGI 服务器
+# 下载并运行部署脚本
+wget -O setup.sh https://raw.githubusercontent.com/tsuimanlung/RentalContract/main/deploy/setup.sh
+chmod +x setup.sh
+./setup.sh
+```
+
+脚本会自动完成：安装依赖 → 克隆项目 → 配置虚拟环境 → 设置 systemd 自启 → 配置 Nginx 反向代理。
+
+#### 手动部署
+
+```bash
+# 1. 安装依赖
+sudo apt update
+sudo apt install -y python3 python3-pip python3-venv nginx git
+
+# 2. 克隆项目
+git clone https://github.com/tsuimanlung/RentalContract.git
+cd RentalContract
+
+# 3. 配置 Python 环境
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 pip install gunicorn
 
-# 启动服务
+# 4. 配置 systemd 服务
+sudo cp deploy/rental-contract.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable rental-contract
+sudo systemctl start rental-contract
+
+# 5. 配置 Nginx 反向代理
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/rental-contract
+sudo ln -sf /etc/nginx/sites-available/rental-contract /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl restart nginx
+
+# 6. 防火墙
+sudo ufw allow 80/tcp
+sudo ufw --force enable
+```
+
+#### 配置域名与 HTTPS（可选）
+
+```bash
+# 安装 Certbot
+sudo apt install -y certbot python3-certbot-nginx
+
+# 申请 SSL 证书（将 your-domain.com 替换为你的域名）
+sudo certbot --nginx -d your-domain.com
+
+# 自动续期
+sudo certbot renew --dry-run
+```
+
+完成后访问 `https://your-domain.com` 即可使用。
+
+#### 常用管理命令
+
+```bash
+# 查看服务状态
+sudo systemctl status rental-contract
+
+# 查看日志
+sudo journalctl -u rental-contract -f
+
+# 重启服务
+sudo systemctl restart rental-contract
+
+# 更新代码后重启
+cd ~/RentalContract && git pull && sudo systemctl restart rental-contract
+```
+
+### 方式二：其他云平台
+
+以下平台提供免费套餐，适合快速部署：
+
+| 平台 | 免费额度 | 特点 |
+|------|---------|------|
+| [Render](https://render.com/) | Web Service + PostgreSQL | 连接 GitHub 自动部署 |
+| [PythonAnywhere](https://www.pythonanywhere.com/) | 1 个 Web 应用 | 最简单的 Flask 部署 |
+| [Railway](https://railway.app/) | 每月 $5 额度 | 一键部署 |
+
+### 方式三：Linux/VPS 通用
+
+```bash
+pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:8000 "app:create_app()"
 ```
 
-建议配合 `systemd` 或 `supervisor` 保持进程持续运行，并使用 Nginx 反向代理配置 SSL 证书。
+建议配合 `systemd` 或 `supervisor` 保持进程运行，Nginx 反向代理配置 SSL。
 
-### 方式二：Windows 服务器
+### 方式四：Windows 服务器
 
 ```bash
 pip install waitress
 waitress-serve --host=0.0.0.0 --port=8000 "app:create_app()"
 ```
-
-### 方式三：云平台部署
-
-以下平台提供免费套餐，适合个人使用：
-- [PythonAnywhere](https://www.pythonanywhere.com/)
-- [Render](https://render.com/)
-- [Railway](https://railway.app/)
 
 ---
 
