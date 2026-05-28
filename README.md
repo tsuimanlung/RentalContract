@@ -112,7 +112,7 @@ RentalContract/
 2. 创建 VM 实例：
    - 镜像：**Ubuntu 22.04** 或 **24.04**（ARM 或 AMD 均可）
    - 形态：VM.Standard.A1.Flex（ARM，最高 4 核 24GB 免费）或 VM.Standard.E2.1.Micro（AMD，1 核 1GB 免费）
-   - 网络：确保开放 **80（HTTP）** 端口
+   - 网络：确保开放 **5000** 端口
 3. 通过 SSH 连接实例
 
 #### 一键部署
@@ -124,14 +124,14 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-脚本会自动完成：安装依赖 → 克隆项目 → 配置虚拟环境 → 设置 systemd 自启 → 配置 Nginx 反向代理。
+脚本会自动完成：安装依赖 → 克隆项目 → 配置虚拟环境 → 设置 systemd 自启 → 开放端口。
 
 #### 手动部署
 
 ```bash
 # 1. 安装依赖
 sudo apt update
-sudo apt install -y python3 python3-pip python3-venv nginx git
+sudo apt install -y python3 python3-pip python3-venv git
 
 # 2. 克隆项目
 git clone https://github.com/tsuimanlung/RentalContract.git
@@ -149,31 +149,39 @@ sudo systemctl daemon-reload
 sudo systemctl enable rental-contract
 sudo systemctl start rental-contract
 
-# 5. 配置 Nginx 反向代理
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/rental-contract
-sudo ln -sf /etc/nginx/sites-available/rental-contract /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t && sudo systemctl restart nginx
-
-# 6. 防火墙
-sudo ufw allow 80/tcp
+# 5. 防火墙开放端口 5000
+sudo ufw allow 5000/tcp
 sudo ufw --force enable
 ```
 
+完成后访问 `http://<你的实例IP>:5000` 即可使用。
+
+> 如果你已有其他网站运行在 80 端口（如 `http://152.69.196.73`），Lewis' Houses 会通过 **5000 端口**独立访问，两者互不冲突。
+
 #### 配置域名与 HTTPS（可选）
 
+如果想让 Lewis' Houses 也走 443 端口并用域名访问，可以在已有 Nginx 上添加反向代理：
+
 ```bash
-# 安装 Certbot
-sudo apt install -y certbot python3-certbot-nginx
+# 在已有的 Nginx 配置中添加
+sudo tee /etc/nginx/sites-enabled/rental <<'EOF'
+server {
+    listen 443 ssl;
+    server_name rental.你的域名.com;
 
-# 申请 SSL 证书（将 your-domain.com 替换为你的域名）
-sudo certbot --nginx -d your-domain.com
+    ssl_certificate /etc/letsencrypt/live/你的域名.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/你的域名.com/privkey.pem;
 
-# 自动续期
-sudo certbot renew --dry-run
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+EOF
+sudo systemctl reload nginx
 ```
-
-完成后访问 `https://your-domain.com` 即可使用。
 
 #### 常用管理命令
 
@@ -181,7 +189,7 @@ sudo certbot renew --dry-run
 # 查看服务状态
 sudo systemctl status rental-contract
 
-# 查看日志
+# 查看日志（实时）
 sudo journalctl -u rental-contract -f
 
 # 重启服务
