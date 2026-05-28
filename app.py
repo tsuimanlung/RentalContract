@@ -123,8 +123,8 @@ def create_app():
             db.session.add(prop)
             db.session.commit()
             flash(f'房源 "{prop.name}" 添加成功！', 'success')
-            return redirect(url_for('property_detail', id=prop.id))
-        return render_template('property_form.html', form=form, title='Add Property')
+            return redirect(url_for('property_detail', pid=prop.id))
+        return render_template('property_form.html', form=form, title='添加房源')
 
     @app.route('/property/<int:pid>')
     @login_required
