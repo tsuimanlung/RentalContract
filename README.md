@@ -115,7 +115,7 @@ RentalContract/
    - 网络：确保开放 **5000** 端口
 3. 通过 SSH 连接实例
 
-#### 一键部署
+#### 一键部署（Ubuntu）
 
 ```bash
 # 下载并运行部署脚本
@@ -125,6 +125,17 @@ chmod +x setup.sh
 ```
 
 脚本会自动完成：安装依赖 → 克隆项目 → 配置虚拟环境 → 设置 systemd 自启 → 开放端口。
+
+#### 一键部署（CentOS / Oracle Linux）
+
+如果你的实例是 CentOS 7、Oracle Linux 7/8 等使用 `yum` 的系统，请使用 CentOS 专用脚本：
+
+```bash
+# 下载并运行 CentOS 部署脚本
+wget -O setup-centos.sh https://raw.githubusercontent.com/tsuimanlung/RentalContract/main/deploy/setup-centos.sh
+chmod +x setup-centos.sh
+./setup-centos.sh
+```
 
 #### 手动部署
 
