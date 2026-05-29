@@ -270,6 +270,7 @@ wget -O update.sh https://raw.githubusercontent.com/tsuimanlung/RentalContract/m
 chmod +x update.sh
 
 # 以后每次更新只需执行
+cd /opt/RentalContract
 ./update.sh
 ```
 
