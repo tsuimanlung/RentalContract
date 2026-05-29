@@ -86,8 +86,12 @@ Group=root
 WorkingDirectory=/opt/RentalContract
 Environment="PATH=/opt/RentalContract/venv/bin"
 ExecStart=/opt/RentalContract/venv/bin/gunicorn -w 2 -b 0.0.0.0:5000 "app:create_app()"
+ExecStop=/bin/kill -s TERM $MAINPID
+ExecReload=/bin/kill -s HUP $MAINPID
 Restart=always
 RestartSec=5
+TimeoutStopSec=5
+KillMode=mixed
 
 [Install]
 WantedBy=multi-user.target
