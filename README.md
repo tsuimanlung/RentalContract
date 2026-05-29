@@ -16,7 +16,7 @@
 | **📋 租赁历史** | 结束租约时自动归档，保留完整历史记录 |
 | **📊 仪表盘** | 房源总览卡片 + 统计数据（已租/空置/维修中） |
 | **📱 响应式设计** | 桌面、平板、手机均可流畅使用 |
-| **🔒 安全登录** | 密码保护，基于会话的身份认证 |
+| **🔒 安全登录** | 密码保护，基于会话的身份认证，支持修改密码 |
 
 ---
 
@@ -69,16 +69,23 @@ RentalContract/
 ├── models.py               # 数据库模型（SQLAlchemy ORM）
 ├── forms.py                # WTForms 表单定义
 ├── config.py               # 应用配置
-├── requirements.txt            # Python 依赖（Python 3.8+）
-├── requirements-centos.txt     # Python 依赖（CentOS 7 / Python 3.6）
+├── requirements.txt                # Python 依赖（Python 3.8+）
+├── requirements-centos.txt         # Python 依赖（CentOS 7 / Python 3.6）
 ├── .gitignore
 ├── README.md
+├── deploy/                    # 部署相关脚本
+│   ├── setup.sh               # Ubuntu 一键部署脚本
+│   ├── setup-centos.sh        # CentOS 一键部署脚本
+│   ├── rental-contract.service # systemd 服务配置
+│   ├── update.sh              # 一键更新脚本
+│   └── nginx.conf             # Nginx 反向代理配置
 ├── templates/              # Jinja2 HTML 模板
 │   ├── base.html           # 基础布局（导航栏）
 │   ├── login.html          # 登录页面
 │   ├── dashboard.html      # 控制台/房源总览
 │   ├── property_form.html  # 添加/编辑房源表单
-│   └── property_detail.html # 房源详情（含标签页）
+│   ├── property_detail.html # 房源详情（含标签页）
+│   └── change_password.html # 修改密码页面
 ├── static/
 │   ├── css/style.css       # 自定义样式
 │   └── js/main.js          # 前端交互
@@ -248,12 +255,39 @@ sudo systemctl restart rental-contract
 # 查看端口占用
 sudo lsof -i :5000
 
-# 更新代码后重启（Ubuntu）
-cd ~/RentalContract && git pull && sudo systemctl restart rental-contract
-
-# 更新代码后重启（CentOS，root 用户）
-cd /opt/RentalContract && git pull && systemctl restart rental-contract
+# 杀掉占用端口的进程
+kill -9 $(lsof -t -i :5000)
 ```
+
+#### 更新代码
+
+方案一：使用更新脚本（推荐）
+
+```bash
+# 下载更新脚本（仅首次需要）
+cd /opt/RentalContract
+wget -O update.sh https://raw.githubusercontent.com/tsuimanlung/RentalContract/main/deploy/update.sh
+chmod +x update.sh
+
+# 以后每次更新只需执行
+./update.sh
+```
+
+方案二：手动更新
+
+```bash
+cd /opt/RentalContract
+git pull
+systemctl stop rental-contract
+sleep 2
+systemctl start rental-contract
+```
+
+> ⚠️ 如果重启时报 `Connection in use: ('0.0.0.0', 5000)`，说明有旧进程残留。先手动清理再重启：
+> ```bash
+> kill -9 $(lsof -t -i :5000)
+> systemctl start rental-contract
+> ```
 
 ### 方式二：其他云平台
 
