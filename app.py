@@ -12,7 +12,7 @@ from flask_login import (
 
 from config import Config
 from models import db, User, Property, Contract, Photo, RentalHistory, schema_repair
-from forms import LoginForm, PropertyForm, ContractForm, PhotoForm
+from forms import LoginForm, PropertyForm, ContractForm, PhotoForm, ChangePasswordForm
 
 
 def create_app():
@@ -90,6 +90,20 @@ def create_app():
         logout_user()
         flash('您已退出登录。', 'info')
         return redirect(url_for('login'))
+
+    @app.route('/change-password', methods=['GET', 'POST'])
+    @login_required
+    def change_password():
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            if current_user.check_password(form.current_password.data):
+                current_user.set_password(form.new_password.data)
+                db.session.commit()
+                flash('密码已修改成功！', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('当前密码不正确。', 'danger')
+        return render_template('change_password.html', form=form)
 
     # ====================  DASHBOARD  =======================
 

@@ -4,7 +4,7 @@ from wtforms import (
     StringField, TextAreaField, FloatField, DateField,
     SelectField, PasswordField, SubmitField
 )
-from wtforms.validators import DataRequired, Optional, Length, NumberRange
+from wtforms.validators import DataRequired, Optional, Length, NumberRange, EqualTo
 
 
 class LoginForm(FlaskForm):
@@ -56,6 +56,15 @@ class ContractForm(FlaskForm):
     ])
     notes = TextAreaField('备注', validators=[Optional()])
     submit = SubmitField('添加合同')
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('当前密码', validators=[DataRequired()])
+    new_password = PasswordField('新密码', validators=[DataRequired(), Length(min=6, max=80)])
+    confirm_password = PasswordField('确认新密码', validators=[
+        DataRequired(), EqualTo('new_password', message='两次密码输入不一致')
+    ])
+    submit = SubmitField('修改密码')
 
 
 class PhotoForm(FlaskForm):
